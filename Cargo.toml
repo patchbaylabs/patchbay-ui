@@ -1,0 +1,14 @@
+[package]
+name = "patchbay-ui"
+description = "Shared egui theme and MD3-style widgets for mictrace, sidestage and rcpmix"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/patchbaylabs/patchbay-ui"
+
+[dependencies]
+egui = "0.35"
+
+[dev-dependencies]
+eframe = "0.35"
+egui_kittest = "0.35"
