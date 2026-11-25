@@ -4,7 +4,8 @@
 
 `patchbay-ui` is a small Rust library crate (edition 2021): one designed dark theme plus a set of MD3-style widget constructors for [egui](https://github.com/emilk/egui), shared by the apps **mictrace**, **sidestage** and **rcpmix** so every Patchbay Labs app reads as one product on the same operator's screen.
 
-- Sole runtime dependency: `egui` (0.35). Dev-dependencies: `eframe` (the gallery example) and `egui_kittest`.
+- Sole runtime dependency: `egui` (0.37). Dev-dependencies: `eframe` (the gallery example) and `egui_kittest`.
+- **Versioning:** this crate's version tracks the egui version it targets (`0.37.x` = egui 0.37). Bump `version` together with the `egui`/`eframe`/`egui_kittest` requirements; use the patch digit for our own fixes within an egui release.
 - Two modules, both fully re-exported from the crate root (`src/lib.rs`):
   - `src/theme.rs` — the palette (neutral ladder + semantic state colours), MD3 role aliases over it, the type scale, vendored DejaVu Sans Mono font install, and `theme::apply` which installs everything onto an `egui::Context` at startup. Exactly two knobs: `Options { extra_dark, zoom }`.
   - `src/md3.rs` — thin, pre-styled constructors over **stock egui widgets** (buttons, checkbox, switch, slider, text field, select, card, tabs, snackbar, …). No new widget types, no custom painting (the one existing exception: `select`'s arrow).

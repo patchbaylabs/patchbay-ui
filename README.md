@@ -7,7 +7,7 @@
 *The shared egui theme and Material Design 3 widgets behind every Patchbay Labs app.*
 
 [![Rust](https://img.shields.io/badge/rust-2021-orange?logo=rust)](https://www.rust-lang.org)
-[![egui](https://img.shields.io/badge/egui-0.35-blue)](https://github.com/emilk/egui)
+[![egui](https://img.shields.io/badge/egui-0.37-blue)](https://github.com/emilk/egui)
 [![License](https://img.shields.io/badge/license-MIT_OR_Apache--2.0-blue)](LICENSE-MIT)
 
 [Features](#features) • [Getting started](#getting-started) • [Theme](#theme) • [Widgets](#widgets) • [Gallery](#gallery) • [Testing](#testing)

@@ -355,7 +355,7 @@ const SELECT_WIDTH: f32 = 280.0;
 /// internally (`ui.make_persistent_id(egui::IdSalt::new(id_salt))`, hence
 /// the `Copy` bound so the salt can be spent twice).
 ///
-/// **This is the one place in this module that paints.** egui 0.35 draws an
+/// **This is the one place in this module that paints.** egui 0.37 draws an
 /// unconditional down-triangle: it used to flip when the popup opened
 /// upwards and the feature was removed as looking odd in edge cases
 /// (emilk/egui#5713). A select near the bottom of a settings window opens
@@ -367,7 +367,7 @@ pub fn select(
     ui: &egui::Ui,
     id_salt: impl egui::AsIdSalt + Copy,
     selected_text: impl Into<egui::WidgetText>,
-) -> egui::ComboBox {
+) -> egui::ComboBox<'static> {
     let opens_above = select_opens_above(ui, select_button_id(ui, id_salt));
     egui::ComboBox::from_id_salt(id_salt)
         .selected_text(selected_text)
@@ -529,9 +529,9 @@ pub fn tabs(ui: &mut egui::Ui, selected: usize, labels: &[&str]) -> Option<usize
 /// whole palette is built around one dark booth, not a light/dark pair to
 /// invert between), and a raised card already reads as distinctly forward of
 /// the chrome around it.
-pub fn snackbar(ctx: &egui::Context, id_salt: impl egui::AsId, message: &str) {
+pub fn snackbar(ctx: &egui::Context, id_salt: impl egui::AsIdSalt, message: &str) {
     let visuals = ctx.style_of(ctx.theme()).visuals.clone();
-    egui::Area::new(egui::Id::new(id_salt))
+    egui::Area::new(egui::Id::unique(id_salt))
         .anchor(egui::Align2::CENTER_BOTTOM, Vec2::new(0.0, -24.0))
         .order(egui::Order::Foreground)
         .show(ctx, |ui| {
@@ -601,10 +601,11 @@ mod tests {
         // reflected in the response.
         for _ in 0..3 {
             let mut input = egui::RawInput::default();
-            if hover {
+            // The first frame has no laid-out rect yet (its centre is NaN).
+            if hover && rect.is_finite() {
                 input.events.push(egui::Event::PointerMoved(rect.center()));
             }
-            let _ = ctx.run_ui(input, |ui| {
+            theme::tests::run_ui(&ctx, input, |ui| {
                 egui::CentralPanel::default().show(ui, |ui| {
                     let response = add(ui);
                     rect = response.rect;
@@ -669,7 +670,7 @@ mod tests {
                     ..Default::default()
                 },
             );
-            let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+            theme::tests::run_ui(&ctx, egui::RawInput::default(), |ui| {
                 egui::CentralPanel::default().show(ui, |ui| {
                     fills.push(transparent_state_layers(ui, theme::PRIMARY));
                 });
@@ -693,7 +694,7 @@ mod tests {
         let mut text = String::new();
         let (mut field, mut button) = (0.0, 0.0);
         for _ in 0..2 {
-            let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+            theme::tests::run_ui(&ctx, egui::RawInput::default(), |ui| {
                 egui::CentralPanel::default().show(ui, |ui| {
                     ui.horizontal(|ui| {
                         field = ui.add(text_field(&mut text)).rect.height();
@@ -757,7 +758,7 @@ mod tests {
     fn buttons_meet_the_minimum_hit_target() {
         let ctx = ctx();
         let mut rect = egui::Rect::NOTHING;
-        let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+        theme::tests::run_ui(&ctx, egui::RawInput::default(), |ui| {
             egui::CentralPanel::default().show(ui, |ui| {
                 rect = filled_button(ui, "Go").rect;
             });
@@ -778,7 +779,7 @@ mod tests {
     #[test]
     fn every_variant_label_is_readable_on_its_own_fill() {
         let ctx = ctx();
-        let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+        theme::tests::run_ui(&ctx, egui::RawInput::default(), |ui| {
             let chrome = theme::surface_container(ui.visuals());
             let surface_high = theme::surface_container_high(ui.visuals());
             for (name, label, fill) in [
@@ -810,7 +811,7 @@ mod tests {
     fn md3_and_stock_buttons_are_the_same_height() {
         let ctx = ctx();
         let (mut md3_h, mut stock_h) = (0.0, 0.0);
-        let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+        theme::tests::run_ui(&ctx, egui::RawInput::default(), |ui| {
             egui::CentralPanel::default().show(ui, |ui| {
                 md3_h = filled_button(ui, "Go").rect.height();
                 stock_h = ui.button("Go").rect.height();
@@ -824,7 +825,7 @@ mod tests {
     #[test]
     fn surface_constructors_show_without_panicking() {
         let ctx = ctx();
-        let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+        theme::tests::run_ui(&ctx, egui::RawInput::default(), |ui| {
             egui::CentralPanel::default().show(ui, |ui| {
                 card(ui).show(ui, |ui| {
                     ui.label("card");
@@ -849,7 +850,7 @@ mod tests {
         let ctx = ctx();
         let mut a = false;
         let mut b = true;
-        let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+        theme::tests::run_ui(&ctx, egui::RawInput::default(), |ui| {
             egui::CentralPanel::default().show(ui, |ui| {
                 ui.add(checkbox(&mut a, "Checkbox"));
                 ui.add(switch(&mut b, "Switch"));
@@ -863,7 +864,7 @@ mod tests {
     fn slider_and_select_build_without_panicking() {
         let ctx = ctx();
         let mut value = 5_i32;
-        let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+        theme::tests::run_ui(&ctx, egui::RawInput::default(), |ui| {
             egui::CentralPanel::default().show(ui, |ui| {
                 ui.add(slider(&mut value, 0..=10));
                 select(ui, "test-select", "Choice").show_ui(ui, |ui| {
@@ -891,7 +892,7 @@ mod tests {
                 events,
                 ..Default::default()
             };
-            let _ = ctx.run_ui(input, |ui| {
+            theme::tests::run_ui(&ctx, input, |ui| {
                 egui::CentralPanel::default().show(ui, |ui| {
                     button_id = Some(select_button_id(ui, "test-select"));
                     select(ui, "test-select", "Choice").show_ui(ui, |ui| {

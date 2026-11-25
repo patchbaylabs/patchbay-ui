@@ -712,6 +712,12 @@ pub(crate) mod tests {
         0.2126 * ch(c.r()) + 0.7152 * ch(c.g()) + 0.0722 * ch(c.b())
     }
 
+    /// Runs one headless frame. egui 0.37 panics if a frame's texture deltas
+    /// are dropped unapplied, and tests have no renderer to apply them to.
+    pub(crate) fn run_ui(ctx: &egui::Context, input: egui::RawInput, f: impl FnMut(&mut egui::Ui)) {
+        ctx.run_ui(input, f).textures_delta.clear();
+    }
+
     /// Shared with `md3.rs`'s and `colors.rs`'s tests, which check a label
     /// against the fill it actually renders on.
     pub(crate) fn contrast(a: Color32, b: Color32) -> f64 {
@@ -867,7 +873,7 @@ pub(crate) mod tests {
                 ..Default::default()
             },
         );
-        let _ = ctx.run_ui(egui::RawInput::default(), |_| {});
+        run_ui(&ctx, egui::RawInput::default(), |_| {});
         assert!((ctx.zoom_factor() - 1.4).abs() < f32::EPSILON);
     }
 
